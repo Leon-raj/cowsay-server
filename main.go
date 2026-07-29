@@ -1,33 +1,22 @@
 package main
 
 import (
-	"bytes"
 	"html/template"
+	"log"
 	"net/http"
-
-	"nmyk.io/cowsay"
 )
+
+var tmpl *template.Template
 
 func main() {
 
-	tmpl := template.Must(template.New("").Parse(page))
+	tmpl = template.Must(template.New("").Parse(page))
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/say", cowServe)
 
-		text := r.URL.Query().Get("text")
-		if text == "" {
-			text = "Linux is awesome!"
-		}
-
-		var b bytes.Buffer
-
-		cowsay.Cow{}.Write(&b, []byte(text), false)
-
-		tmpl.Execute(w, map[string]any{
-			"Input": text,
-			"Cow":   b.String(),
-		})
-	})
-
-	http.ListenAndServe(":8080", nil)
+	log.Println("Server started, listening on http://localhost:8080")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
